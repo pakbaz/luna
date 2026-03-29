@@ -26,6 +26,7 @@ Built with [.NET MAUI](https://dotnet.microsoft.com/apps/maui), Luna runs on:
 | **iOS** | `net10.0-ios` | ✅ Supported |
 | **Android** | `net10.0-android` | ✅ Supported |
 | **Windows** | `net10.0-windows10.0.19041.0` | ✅ Supported |
+| **Web** | HTML5 Canvas (static site) | ✅ Tested |
 
 > **Linux**: .NET MAUI does not natively target Linux. However, community projects like [Uno Platform](https://platform.uno/) can enable Linux support for MAUI-style apps.
 
@@ -60,10 +61,20 @@ dotnet build -f net10.0-android -t:Run
 dotnet build -f net10.0-ios -t:Run
 ```
 
+### Web Version (Static Site)
+
+```bash
+cd web
+python3 -m http.server 8080
+# Open http://localhost:8080
+```
+
+Or simply host the `web/` folder on any static hosting (GitHub Pages, Netlify, etc.).
+
 ## Project Structure
 
 ```
-MoonSimulation/
+MoonSimulation/               # .NET MAUI (native app)
 ├── Models/
 │   └── OrbitalState.cs           # Moon angle, Earth rotation, phase calculation
 ├── Services/
@@ -86,6 +97,16 @@ MoonSimulation/
 │   └── EarthSkyView.cs           # Bottom-right: Sky from Earth's surface
 ├── MainPage.xaml / .cs           # Layout and controls
 └── Platforms/                    # iOS, Android, Mac Catalyst, Windows
+
+web/                              # Static website (HTML5 Canvas)
+├── index.html                    # Layout with 3 canvases + controls
+├── css/style.css                 # Dark theme, responsive grid
+└── js/
+    ├── main.js                   # Entry point
+    ├── models/orbitalState.js    # Same orbital model as MAUI
+    ├── services/simulationEngine.js
+    ├── renderers/                # 1:1 port of all SkiaSharp renderers
+    └── views/                    # orbitalView, moonPhaseView, earthSkyView
 ```
 
 ## Architecture
