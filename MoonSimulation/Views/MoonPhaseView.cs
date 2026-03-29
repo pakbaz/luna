@@ -49,17 +49,23 @@ public class MoonPhaseView : SKCanvasView
         };
         canvas.DrawCircle(center, moonRadius, limbPaint);
 
-        // Phase label
+        // Cute face on the lit portion of the moon
+        string faceExpression = SpaceRenderer.GetMoonFaceExpression(_state.MoonAngleDegrees);
+        if (_state.Illumination > 0.15) // Only show face when there's enough visible moon
+        {
+            SpaceRenderer.DrawCuteFace(canvas, center, moonRadius * 0.7f, faceExpression);
+        }
+
+        // Phase label with fun kid-friendly name
         var (phaseName, phaseEmoji) = _state.Phase;
         SpaceRenderer.DrawLabel(canvas, $"{phaseEmoji}  {phaseName}",
             new SKPoint(w * 0.5f, center.Y + moonRadius + 40),
             22, new SKColor(230, 230, 230));
 
-        // Illumination percentage
-        SpaceRenderer.DrawLabel(canvas,
-            $"{(_state.Illumination * 100):F0}% illuminated",
-            new SKPoint(w * 0.5f, center.Y + moonRadius + 70),
-            15, new SKColor(160, 160, 180));
+        // Moon face emoji
+        SpaceRenderer.DrawLabel(canvas, _state.MoonFace,
+            new SKPoint(w * 0.5f, center.Y + moonRadius + 68),
+            20, new SKColor(230, 230, 230));
     }
 
     /// <summary>

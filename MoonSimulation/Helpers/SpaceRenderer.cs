@@ -88,7 +88,7 @@ public static class SpaceRenderer
     }
 
     /// <summary>
-    /// Draws the Sun with corona glow.
+    /// Draws the Sun with corona glow and a happy face.
     /// </summary>
     public static void DrawSun(SKCanvas canvas, SKPoint center, float radius)
     {
@@ -122,6 +122,9 @@ public static class SpaceRenderer
 
         sunPaint.Shader = sunShader;
         canvas.DrawCircle(center, radius, sunPaint);
+
+        // Happy face on Sun
+        DrawCuteFace(canvas, center, radius, "happy");
     }
 
     /// <summary>
@@ -384,7 +387,17 @@ public static class SpaceRenderer
         {
             float starAlpha = (float)Math.Clamp((0.2 - sunElevation) / 0.4, 0, 1);
             DrawSkyStars(canvas, bounds, groundY, starAlpha);
+
+            // Shooting star at night
+            if (sunElevation < -0.2)
+                DrawShootingStar(canvas, bounds, groundY, _twinkleFrame);
         }
+
+        // Clouds during daytime
+        DrawClouds(canvas, bounds, groundY, sunElevation, _twinkleFrame);
+
+        // Little house on the ground
+        DrawLittleHouse(canvas, bounds, groundY, sunElevation);
 
         // Time label
         int hours = (int)hourOfDay;
@@ -689,6 +702,344 @@ public static class SpaceRenderer
             (byte)(color.Green * (1 - amount)),
             (byte)(color.Blue * (1 - amount)),
             color.Alpha);
+    }
+
+    #endregion
+
+    #region Cute Faces (Kid-Friendly)
+
+    /// <summary>
+    /// Draws a cute cartoon face on a celestial body.
+    /// </summary>
+    public static void DrawCuteFace(SKCanvas canvas, SKPoint center, float radius,
+        string expression)
+    {
+        float eyeY = center.Y - radius * 0.12f;
+        float eyeSpacing = radius * 0.25f;
+        float eyeRadius = radius * 0.07f;
+
+        using var eyePaint = new SKPaint
+        {
+            IsAntialias = true,
+            Color = new SKColor(40, 40, 40, 200)
+        };
+        using var eyeHighlight = new SKPaint
+        {
+            IsAntialias = true,
+            Color = new SKColor(255, 255, 255, 200)
+        };
+        using var mouthPaint = new SKPaint
+        {
+            IsAntialias = true,
+            Style = SKPaintStyle.Stroke,
+            StrokeWidth = radius * 0.04f,
+            StrokeCap = SKStrokeCap.Round,
+            Color = new SKColor(40, 40, 40, 180)
+        };
+        using var blushPaint = new SKPaint
+        {
+            IsAntialias = true,
+            Color = new SKColor(255, 130, 130, 50)
+        };
+
+        switch (expression)
+        {
+            case "happy":
+                // Eyes
+                canvas.DrawCircle(center.X - eyeSpacing, eyeY, eyeRadius, eyePaint);
+                canvas.DrawCircle(center.X + eyeSpacing, eyeY, eyeRadius, eyePaint);
+                // Eye highlights
+                canvas.DrawCircle(center.X - eyeSpacing + eyeRadius * 0.3f, eyeY - eyeRadius * 0.3f,
+                    eyeRadius * 0.35f, eyeHighlight);
+                canvas.DrawCircle(center.X + eyeSpacing + eyeRadius * 0.3f, eyeY - eyeRadius * 0.3f,
+                    eyeRadius * 0.35f, eyeHighlight);
+                // Smile
+                using (var smilePath = new SKPath())
+                {
+                    smilePath.MoveTo(center.X - radius * 0.2f, center.Y + radius * 0.1f);
+                    smilePath.QuadTo(center.X, center.Y + radius * 0.3f,
+                        center.X + radius * 0.2f, center.Y + radius * 0.1f);
+                    canvas.DrawPath(smilePath, mouthPaint);
+                }
+                // Blush cheeks
+                canvas.DrawCircle(center.X - radius * 0.35f, center.Y + radius * 0.08f,
+                    radius * 0.1f, blushPaint);
+                canvas.DrawCircle(center.X + radius * 0.35f, center.Y + radius * 0.08f,
+                    radius * 0.1f, blushPaint);
+                break;
+
+            case "sleepy":
+                // Closed eyes (arcs)
+                using (var closedEyePath = new SKPath())
+                {
+                    closedEyePath.MoveTo(center.X - eyeSpacing - eyeRadius, eyeY);
+                    closedEyePath.QuadTo(center.X - eyeSpacing, eyeY + eyeRadius * 0.8f,
+                        center.X - eyeSpacing + eyeRadius, eyeY);
+                    canvas.DrawPath(closedEyePath, mouthPaint);
+                }
+                using (var closedEyePath2 = new SKPath())
+                {
+                    closedEyePath2.MoveTo(center.X + eyeSpacing - eyeRadius, eyeY);
+                    closedEyePath2.QuadTo(center.X + eyeSpacing, eyeY + eyeRadius * 0.8f,
+                        center.X + eyeSpacing + eyeRadius, eyeY);
+                    canvas.DrawPath(closedEyePath2, mouthPaint);
+                }
+                // Gentle smile
+                using (var sleepSmile = new SKPath())
+                {
+                    sleepSmile.MoveTo(center.X - radius * 0.1f, center.Y + radius * 0.15f);
+                    sleepSmile.QuadTo(center.X, center.Y + radius * 0.22f,
+                        center.X + radius * 0.1f, center.Y + radius * 0.15f);
+                    canvas.DrawPath(sleepSmile, mouthPaint);
+                }
+                // Zzz
+                DrawLabel(canvas, "z z", new SKPoint(center.X + radius * 0.5f, center.Y - radius * 0.3f),
+                    radius * 0.2f, new SKColor(200, 200, 255, 150));
+                break;
+
+            case "wow":
+                // Big sparkly eyes
+                canvas.DrawCircle(center.X - eyeSpacing, eyeY, eyeRadius * 1.3f, eyePaint);
+                canvas.DrawCircle(center.X + eyeSpacing, eyeY, eyeRadius * 1.3f, eyePaint);
+                // Star-like highlights
+                canvas.DrawCircle(center.X - eyeSpacing + eyeRadius * 0.3f, eyeY - eyeRadius * 0.4f,
+                    eyeRadius * 0.45f, eyeHighlight);
+                canvas.DrawCircle(center.X + eyeSpacing + eyeRadius * 0.3f, eyeY - eyeRadius * 0.4f,
+                    eyeRadius * 0.45f, eyeHighlight);
+                canvas.DrawCircle(center.X - eyeSpacing - eyeRadius * 0.3f, eyeY + eyeRadius * 0.2f,
+                    eyeRadius * 0.2f, eyeHighlight);
+                canvas.DrawCircle(center.X + eyeSpacing - eyeRadius * 0.3f, eyeY + eyeRadius * 0.2f,
+                    eyeRadius * 0.2f, eyeHighlight);
+                // Open mouth (O shape)
+                canvas.DrawOval(center.X, center.Y + radius * 0.18f,
+                    radius * 0.1f, radius * 0.12f, mouthPaint);
+                // Extra blush
+                blushPaint.Color = new SKColor(255, 130, 130, 70);
+                canvas.DrawCircle(center.X - radius * 0.35f, center.Y + radius * 0.1f,
+                    radius * 0.12f, blushPaint);
+                canvas.DrawCircle(center.X + radius * 0.35f, center.Y + radius * 0.1f,
+                    radius * 0.12f, blushPaint);
+                break;
+
+            case "content":
+                // Relaxed eyes (slightly curved)
+                canvas.DrawCircle(center.X - eyeSpacing, eyeY, eyeRadius * 0.9f, eyePaint);
+                canvas.DrawCircle(center.X + eyeSpacing, eyeY, eyeRadius * 0.9f, eyePaint);
+                canvas.DrawCircle(center.X - eyeSpacing + eyeRadius * 0.3f, eyeY - eyeRadius * 0.3f,
+                    eyeRadius * 0.3f, eyeHighlight);
+                canvas.DrawCircle(center.X + eyeSpacing + eyeRadius * 0.3f, eyeY - eyeRadius * 0.3f,
+                    eyeRadius * 0.3f, eyeHighlight);
+                // Gentle smile
+                using (var gentleSmile = new SKPath())
+                {
+                    gentleSmile.MoveTo(center.X - radius * 0.15f, center.Y + radius * 0.12f);
+                    gentleSmile.QuadTo(center.X, center.Y + radius * 0.22f,
+                        center.X + radius * 0.15f, center.Y + radius * 0.12f);
+                    canvas.DrawPath(gentleSmile, mouthPaint);
+                }
+                break;
+        }
+    }
+
+    /// <summary>
+    /// Returns a face expression name based on moon phase angle.
+    /// </summary>
+    public static string GetMoonFaceExpression(double moonAngleDeg)
+    {
+        double angle = ((moonAngleDeg % 360) + 360) % 360;
+        return angle switch
+        {
+            < 22.5 => "sleepy",
+            < 67.5 => "content",
+            < 112.5 => "happy",
+            < 157.5 => "happy",
+            < 202.5 => "wow",
+            < 247.5 => "content",
+            < 292.5 => "happy",
+            < 337.5 => "sleepy",
+            _ => "sleepy"
+        };
+    }
+
+    #endregion
+
+    #region Sky Scene Enhancements (Kid-Friendly)
+
+    /// <summary>
+    /// Draws fluffy clouds in the day sky.
+    /// </summary>
+    public static void DrawClouds(SKCanvas canvas, SKRect bounds, float groundY,
+        double sunElevation, long frame)
+    {
+        if (sunElevation < -0.1) return; // No clouds at night
+
+        byte alpha = (byte)(Math.Clamp(sunElevation + 0.1, 0, 1) * 120);
+        using var cloudPaint = new SKPaint
+        {
+            IsAntialias = true,
+            Color = new SKColor(255, 255, 255, alpha)
+        };
+
+        float w = bounds.Width;
+        float skyH = groundY - bounds.Top;
+
+        // Slowly drifting clouds
+        float drift = (frame * 0.3f) % (w + 200) - 100;
+
+        DrawCloud(canvas, bounds.Left + drift, bounds.Top + skyH * 0.2f, w * 0.12f, cloudPaint);
+        DrawCloud(canvas, bounds.Left + (drift * 0.6f + w * 0.5f) % (w + 200) - 100,
+            bounds.Top + skyH * 0.35f, w * 0.09f, cloudPaint);
+        DrawCloud(canvas, bounds.Left + (drift * 0.4f + w * 0.3f) % (w + 200) - 100,
+            bounds.Top + skyH * 0.5f, w * 0.07f, cloudPaint);
+    }
+
+    private static void DrawCloud(SKCanvas canvas, float x, float y, float size, SKPaint paint)
+    {
+        canvas.DrawCircle(x, y, size * 0.5f, paint);
+        canvas.DrawCircle(x - size * 0.35f, y + size * 0.1f, size * 0.35f, paint);
+        canvas.DrawCircle(x + size * 0.35f, y + size * 0.1f, size * 0.35f, paint);
+        canvas.DrawCircle(x + size * 0.15f, y - size * 0.15f, size * 0.4f, paint);
+        canvas.DrawCircle(x - size * 0.15f, y + size * 0.2f, size * 0.3f, paint);
+    }
+
+    /// <summary>
+    /// Draws a shooting star animation at night.
+    /// </summary>
+    public static void DrawShootingStar(SKCanvas canvas, SKRect bounds, float groundY, long frame)
+    {
+        // A shooting star appears every ~200 frames and lasts ~30 frames
+        int cycle = (int)(frame % 300);
+        if (cycle > 30) return;
+
+        float progress = cycle / 30f;
+        float startX = bounds.Left + bounds.Width * 0.7f;
+        float startY = bounds.Top + 20;
+        float endX = bounds.Left + bounds.Width * 0.3f;
+        float endY = groundY * 0.4f;
+
+        float curX = startX + (endX - startX) * progress;
+        float curY = startY + (endY - startY) * progress;
+
+        // Tail
+        float tailLen = 30f * (1 - progress);
+        float tailX = curX - (endX - startX) / (endY - startY) * -tailLen;
+        float tailY = curY - tailLen;
+
+        using var starPaint = new SKPaint
+        {
+            IsAntialias = true,
+            Style = SKPaintStyle.Stroke,
+            StrokeWidth = 2f,
+            StrokeCap = SKStrokeCap.Round
+        };
+        using var shader = SKShader.CreateLinearGradient(
+            new SKPoint(tailX, tailY), new SKPoint(curX, curY),
+            new SKColor[] { SKColors.Transparent, new SKColor(255, 255, 220, (byte)(200 * (1 - progress))) },
+            null, SKShaderTileMode.Clamp);
+        starPaint.Shader = shader;
+        canvas.DrawLine(tailX, tailY, curX, curY, starPaint);
+
+        // Head glow
+        using var headPaint = new SKPaint
+        {
+            IsAntialias = true,
+            Color = new SKColor(255, 255, 230, (byte)(255 * (1 - progress))),
+            MaskFilter = SKMaskFilter.CreateBlur(SKBlurStyle.Normal, 3)
+        };
+        canvas.DrawCircle(curX, curY, 2, headPaint);
+    }
+
+    /// <summary>
+    /// Draws a little house with a tree on the ground (cozy scene for kids).
+    /// </summary>
+    public static void DrawLittleHouse(SKCanvas canvas, SKRect bounds, float groundY,
+        double sunElevation)
+    {
+        float w = bounds.Width;
+        float houseX = bounds.Left + w * 0.7f;
+        float houseW = w * 0.1f;
+        float houseH = houseW * 0.8f;
+        float houseY = groundY - houseH;
+        bool isNight = sunElevation < 0;
+
+        // House body
+        using var housePaint = new SKPaint
+        {
+            IsAntialias = true,
+            Color = isNight ? new SKColor(80, 50, 40) : new SKColor(180, 120, 80)
+        };
+        canvas.DrawRect(houseX, houseY, houseW, houseH, housePaint);
+
+        // Roof (triangle)
+        using var roofPaint = new SKPaint
+        {
+            IsAntialias = true,
+            Color = isNight ? new SKColor(100, 40, 40) : new SKColor(180, 60, 60)
+        };
+        using var roofPath = new SKPath();
+        roofPath.MoveTo(houseX - houseW * 0.15f, houseY);
+        roofPath.LineTo(houseX + houseW * 0.5f, houseY - houseH * 0.6f);
+        roofPath.LineTo(houseX + houseW * 1.15f, houseY);
+        roofPath.Close();
+        canvas.DrawPath(roofPath, roofPaint);
+
+        // Window (glowing at night!)
+        float winX = houseX + houseW * 0.3f;
+        float winY = houseY + houseH * 0.25f;
+        float winSize = houseW * 0.35f;
+
+        if (isNight)
+        {
+            // Warm window glow
+            using var glowPaint = new SKPaint
+            {
+                IsAntialias = true,
+                Color = new SKColor(255, 200, 80, 60),
+                MaskFilter = SKMaskFilter.CreateBlur(SKBlurStyle.Normal, winSize)
+            };
+            canvas.DrawCircle(winX + winSize / 2, winY + winSize / 2, winSize * 1.5f, glowPaint);
+        }
+
+        using var windowPaint = new SKPaint
+        {
+            IsAntialias = true,
+            Color = isNight ? new SKColor(255, 220, 120) : new SKColor(150, 200, 255)
+        };
+        canvas.DrawRect(winX, winY, winSize, winSize, windowPaint);
+
+        // Window cross
+        using var framePaint = new SKPaint
+        {
+            IsAntialias = true,
+            Color = isNight ? new SKColor(80, 50, 40) : new SKColor(140, 100, 60),
+            StrokeWidth = 1.5f,
+            Style = SKPaintStyle.Stroke
+        };
+        canvas.DrawLine(winX, winY + winSize / 2, winX + winSize, winY + winSize / 2, framePaint);
+        canvas.DrawLine(winX + winSize / 2, winY, winX + winSize / 2, winY + winSize, framePaint);
+
+        // Tree next to house
+        float treeX = houseX - houseW * 0.6f;
+        float treeTopY = groundY - houseH * 1.2f;
+
+        // Trunk
+        using var trunkPaint = new SKPaint
+        {
+            IsAntialias = true,
+            Color = isNight ? new SKColor(60, 35, 20) : new SKColor(120, 80, 40)
+        };
+        canvas.DrawRect(treeX - 2, groundY - houseH * 0.5f, 5, houseH * 0.5f, trunkPaint);
+
+        // Foliage (circle cluster)
+        using var foliagePaint = new SKPaint
+        {
+            IsAntialias = true,
+            Color = isNight ? new SKColor(20, 60, 20) : new SKColor(50, 150, 50)
+        };
+        float fRadius = houseW * 0.25f;
+        canvas.DrawCircle(treeX, treeTopY + fRadius, fRadius, foliagePaint);
+        canvas.DrawCircle(treeX - fRadius * 0.6f, treeTopY + fRadius * 1.5f, fRadius * 0.8f, foliagePaint);
+        canvas.DrawCircle(treeX + fRadius * 0.6f, treeTopY + fRadius * 1.5f, fRadius * 0.8f, foliagePaint);
     }
 
     #endregion

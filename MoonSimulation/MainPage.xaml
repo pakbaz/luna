@@ -41,78 +41,90 @@
             </Border>
         </Grid>
 
-        <!-- Controls Bar -->
+        <!-- Controls Bar — Big, Colorful, Kid-Friendly -->
         <Grid Grid.Row="2"
               ColumnDefinitions="Auto, *, Auto"
-              Padding="20,8,20,16"
+              Padding="20,10,20,18"
               ColumnSpacing="16"
               BackgroundColor="#12123a">
 
-            <!-- Play/Pause Button -->
+            <!-- Play/Pause Button (BIG) -->
             <Button x:Name="PlayPauseBtn"
                     Grid.Column="0"
                     Text="⏸️"
-                    FontSize="28"
-                    WidthRequest="60"
-                    HeightRequest="60"
-                    CornerRadius="30"
-                    BackgroundColor="#2a2a6a"
+                    FontSize="32"
+                    WidthRequest="70"
+                    HeightRequest="70"
+                    CornerRadius="35"
+                    BackgroundColor="#3a3a8a"
                     TextColor="White"
+                    BorderWidth="2"
+                    BorderColor="#6060cc"
                     Clicked="OnPlayPauseClicked" />
 
-            <!-- Speed Slider with labels -->
+            <!-- Speed Slider with fun labels -->
             <Grid Grid.Column="1"
-                  RowDefinitions="Auto, Auto"
-                  RowSpacing="4">
+                  RowDefinitions="Auto, Auto, Auto"
+                  RowSpacing="2">
 
                 <Grid ColumnDefinitions="Auto, *, Auto"
                       Grid.Row="0">
                     <Label Grid.Column="0"
                            Text="🐢"
-                           FontSize="20"
+                           FontSize="24"
                            VerticalOptions="Center" />
                     <Slider x:Name="SpeedSlider"
                             Grid.Column="1"
                             Minimum="0.1"
                             Maximum="10"
                             Value="1"
-                            MinimumTrackColor="#6060cc"
+                            MinimumTrackColor="#7070dd"
                             MaximumTrackColor="#2a2a4a"
-                            ThumbColor="#9090ff"
+                            ThumbColor="#b0b0ff"
                             ValueChanged="OnSpeedChanged" />
                     <Label Grid.Column="2"
                            Text="🐇"
-                           FontSize="20"
+                           FontSize="24"
                            VerticalOptions="Center" />
                 </Grid>
 
-                <!-- Phase + Time Label -->
-                <StackLayout Grid.Row="1"
-                             Orientation="Horizontal"
-                             HorizontalOptions="Center"
-                             Spacing="20">
-                    <Label x:Name="PhaseLabel"
-                           Text="🌑  New Moon"
-                           FontSize="17"
-                           TextColor="#e0e0f0"
-                           HorizontalTextAlignment="Center" />
-                    <Label x:Name="TimeLabel"
-                           Text="☀️  12:00"
-                           FontSize="17"
-                           TextColor="#e0e0f0"
-                           HorizontalTextAlignment="Center" />
-                </StackLayout>
+                <!-- Phase Label (big, fun) -->
+                <Label x:Name="PhaseLabel"
+                       Grid.Row="1"
+                       Text="🌑  Moon is Hiding!"
+                       FontSize="20"
+                       TextColor="#f0e0ff"
+                       FontAttributes="Bold"
+                       HorizontalOptions="Center"
+                       HorizontalTextAlignment="Center" />
+
+                <!-- Time of Day Label -->
+                <Label x:Name="TimeLabel"
+                       Grid.Row="2"
+                       Text="☀️ Day  12:00"
+                       FontSize="16"
+                       TextColor="#c0c0e0"
+                       HorizontalOptions="Center"
+                       HorizontalTextAlignment="Center" />
             </Grid>
 
             <!-- Speed display -->
-            <Label x:Name="SpeedLabel"
-                   Grid.Column="2"
-                   Text="1.0x"
-                   FontSize="16"
-                   TextColor="#8080b0"
-                   VerticalOptions="Center"
-                   HorizontalOptions="Center"
-                   WidthRequest="50" />
+            <StackLayout Grid.Column="2"
+                         VerticalOptions="Center"
+                         Spacing="2">
+                <Label x:Name="SpeedLabel"
+                       Text="1.0x"
+                       FontSize="18"
+                       FontAttributes="Bold"
+                       TextColor="#9090cc"
+                       HorizontalOptions="Center"
+                       HorizontalTextAlignment="Center" />
+                <Label Text="speed"
+                       FontSize="11"
+                       TextColor="#606080"
+                       HorizontalOptions="Center"
+                       HorizontalTextAlignment="Center" />
+            </StackLayout>
         </Grid>
     </Grid>
 </ContentPage>

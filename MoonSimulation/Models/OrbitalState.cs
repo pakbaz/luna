@@ -90,15 +90,38 @@ public class OrbitalState
 
         return angle switch
         {
-            < 22.5 => ("New Moon", "🌑"),
-            < 67.5 => ("Waxing Crescent", "🌒"),
-            < 112.5 => ("First Quarter", "🌓"),
-            < 157.5 => ("Waxing Gibbous", "🌔"),
-            < 202.5 => ("Full Moon", "🌕"),
-            < 247.5 => ("Waning Gibbous", "🌖"),
-            < 292.5 => ("Last Quarter", "🌗"),
-            < 337.5 => ("Waning Crescent", "🌘"),
-            _ => ("New Moon", "🌑")
+            < 22.5 => ("Moon is Hiding!", "🌑"),
+            < 67.5 => ("A Little Sliver!", "🌒"),
+            < 112.5 => ("Half Moon!", "🌓"),
+            < 157.5 => ("Almost Full!", "🌔"),
+            < 202.5 => ("WOW Full Moon!", "🌕"),
+            < 247.5 => ("Getting Smaller!", "🌖"),
+            < 292.5 => ("Half Moon!", "🌗"),
+            < 337.5 => ("Tiny Sliver!", "🌘"),
+            _ => ("Moon is Hiding!", "🌑")
         };
+    }
+
+    /// <summary>
+    /// A fun face expression for the Moon based on its phase.
+    /// </summary>
+    public string MoonFace
+    {
+        get
+        {
+            double angle = ((MoonAngleDegrees % 360) + 360) % 360;
+            return angle switch
+            {
+                < 22.5 => "😴",    // Hiding/sleeping
+                < 67.5 => "😊",    // Peeking out
+                < 112.5 => "😃",   // Half and happy
+                < 157.5 => "😄",   // Getting excited
+                < 202.5 => "🤩",   // Full moon = WOW
+                < 247.5 => "😌",   // Content
+                < 292.5 => "😃",   // Half again
+                < 337.5 => "🥱",   // Getting sleepy
+                _ => "😴"
+            };
+        }
     }
 }
