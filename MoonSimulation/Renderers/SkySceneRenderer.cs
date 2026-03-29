@@ -62,18 +62,31 @@ public class SkySceneRenderer
             }
         }
 
-        // Moon in the sky
+        // Moon in the sky — visible when above observer's horizon AND sufficiently illuminated.
+        // moonAngleDeg: Moon's orbital angle (0° = between Sun and Earth, 180° = far side)
+        // earthRotationDeg: observer's facing (0° = facing Sun/noon, 180° = away/midnight)
+        // The angular difference tells us how far the Moon is from the observer's zenith.
         double moonObserverAngle = (moonAngleDeg - earthRotationDeg) * Math.PI / 180.0;
         double moonElevation = Math.Cos(moonObserverAngle);
 
-        if (moonElevation > 0.05)
+        // Moon is only visually noticeable if:
+        // 1. Above the horizon (elevation > 0)
+        // 2. Has enough illumination to be seen (near New Moon it's invisible)
+        // 3. During daytime, needs significant illumination to stand out against bright sky
+        double minIlluminationToSee = sunElevation > 0.2 ? 0.25 : 0.03;
+        bool moonVisible = moonElevation > 0.05 && illumination > minIlluminationToSee;
+
+        if (moonVisible)
         {
             float moonSkyX = bounds.Left + w * 0.5f - w * 0.3f * (float)Math.Sin(moonObserverAngle);
             float moonSkyY = groundY - (groundY - bounds.Top) * 0.7f * (float)moonElevation;
             float moonR = Math.Min(w, h) * 0.055f;
 
+            // Fade the moon based on how close it is to the horizon and its illumination
+            float moonAlpha = (float)Math.Min(1.0, moonElevation * 2) * (float)Math.Min(1.0, illumination * 3);
+
             DrawMiniMoonPhase(canvas, new SKPoint(moonSkyX, moonSkyY), moonR,
-                moonAngleDeg, sunElevation);
+                moonAngleDeg, sunElevation, moonAlpha);
         }
 
         // Stars (only visible at night)
@@ -113,10 +126,10 @@ public class SkySceneRenderer
     /// Delegates shadow to MoonPhaseRenderer.DrawPhaseOverlay.
     /// </summary>
     public static void DrawMiniMoonPhase(SKCanvas canvas, SKPoint center, float radius,
-        double moonAngleDeg, double sunElevation)
+        double moonAngleDeg, double sunElevation, float alpha = 1f)
     {
-        // Moon glow (brighter at night)
-        float glowAlpha = sunElevation < 0 ? 0.4f : 0.15f;
+        // Moon glow (brighter at night), scaled by alpha
+        float glowAlpha = (sunElevation < 0 ? 0.4f : 0.15f) * alpha;
         using var glowPaint = new SKPaint
         {
             IsAntialias = true,
@@ -126,17 +139,19 @@ public class SkySceneRenderer
         canvas.DrawCircle(center, radius * 1.5f, glowPaint);
 
         // Moon disk
+        byte diskAlpha = (byte)(alpha * 255);
         using var moonPaint = new SKPaint
         {
             IsAntialias = true,
-            Color = new SKColor(220, 220, 215)
+            Color = new SKColor(220, 220, 215, diskAlpha)
         };
         canvas.DrawCircle(center, radius, moonPaint);
 
         // Phase shadow — uses the shared terminator algorithm
+        byte shadowAlpha = (byte)(alpha * (sunElevation < 0 ? 230 : 200));
         var shadowColor = sunElevation < 0
-            ? new SKColor(5, 5, 25, 230)
-            : new SKColor(100, 140, 200, 200);
+            ? new SKColor(5, 5, 25, shadowAlpha)
+            : new SKColor(100, 140, 200, shadowAlpha);
         MoonPhaseRenderer.DrawPhaseOverlay(canvas, center, radius, moonAngleDeg, shadowColor);
     }
 
