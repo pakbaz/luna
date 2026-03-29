@@ -119,4 +119,4 @@ MIT
 
 ## Acknowledgments
 
-Built with ❤️ for a curious 3-year-old who wanted to know why the Moon changes shape.
+Built with ❤️ and GitHub Copilot CLI for a curious 3-year-old who wanted to know why the Moon changes shape.
