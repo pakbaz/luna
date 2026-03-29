@@ -304,7 +304,7 @@ public static class SpaceRenderer
             float dot = relX * lightDir.X;
             bool isDay = dot > 0;
 
-            // Observer dot
+            // Observer dot with day/night color
             using var obsPaint = new SKPaint
             {
                 IsAntialias = true,
@@ -312,9 +312,9 @@ public static class SpaceRenderer
             };
             canvas.DrawCircle(obsX, obsY, 3.5f, obsPaint);
 
-            // Small "person" label
-            string personEmoji = isDay ? "🧍" : "😴";
-            DrawLabel(canvas, personEmoji, new SKPoint(obsX, obsY - 10), 10,
+            // Small "You" label
+            DrawLabel(canvas, isDay ? "You" : "zzZ",
+                new SKPoint(obsX, obsY - 10), 10,
                 isDay ? new SKColor(255, 255, 200) : new SKColor(200, 200, 255));
         }
     }
@@ -399,19 +399,19 @@ public static class SpaceRenderer
         // Little house on the ground
         DrawLittleHouse(canvas, bounds, groundY, sunElevation);
 
-        // Time label
+        // Time label (plain text — no emoji in SkiaSharp)
         int hours = (int)hourOfDay;
         int mins = (int)((hourOfDay - hours) * 60);
         string timeStr = $"{hours:D2}:{mins:D2}";
 
-        DrawLabel(canvas, $"{timeOfDay.Emoji} {timeStr}",
+        DrawLabel(canvas, timeStr,
             new SKPoint(bounds.Left + w * 0.5f, bounds.Top + 22),
             16, new SKColor(230, 230, 230));
 
         // Day/Night label
         DrawLabel(canvas, timeOfDay.Name,
             new SKPoint(bounds.Left + w * 0.5f, bounds.Top + 44),
-            13, new SKColor(200, 200, 220));
+            14, new SKColor(200, 200, 220));
     }
 
     private static void DrawSkyGradient(SKCanvas canvas, SKRect bounds, float groundY,

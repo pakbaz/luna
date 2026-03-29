@@ -72,19 +72,19 @@ public class OrbitalView : SKCanvasView
             // Moon first (behind), then Earth
             SpaceRenderer.DrawMoonBody(canvas, new SKPoint(moonX, moonY), moonRadius,
                 SunLightDir(new SKPoint(moonX, moonY)));
-            SpaceRenderer.DrawLabel(canvas, "🌙", new SKPoint(moonX, moonY - moonRadius - 8),
+            SpaceRenderer.DrawLabel(canvas, "Moon", new SKPoint(moonX, moonY - moonRadius - 8),
                 14, new SKColor(200, 200, 200));
         }
 
         // Sun (always behind everything at its position)
         SpaceRenderer.DrawSun(canvas, new SKPoint(sunX, sunY), sunRadius);
-        SpaceRenderer.DrawLabel(canvas, "Sun ☀️", new SKPoint(sunX, sunY + sunRadius + 20),
+        SpaceRenderer.DrawLabel(canvas, "Sun", new SKPoint(sunX, sunY + sunRadius + 20),
             15, new SKColor(255, 220, 100));
 
         // Earth
         SpaceRenderer.DrawEarth(canvas, new SKPoint(earthX, earthY), earthRadius,
             SunLightDir(new SKPoint(earthX, earthY)), _state.EarthRotationDegrees);
-        SpaceRenderer.DrawLabel(canvas, "Earth 🌍", new SKPoint(earthX, earthY + earthRadius + 20),
+        SpaceRenderer.DrawLabel(canvas, "Earth", new SKPoint(earthX, earthY + earthRadius + 20),
             15, new SKColor(100, 180, 255));
 
         if (!moonBehind)
@@ -92,7 +92,7 @@ public class OrbitalView : SKCanvasView
             // Moon in front
             SpaceRenderer.DrawMoonBody(canvas, new SKPoint(moonX, moonY), moonRadius,
                 SunLightDir(new SKPoint(moonX, moonY)));
-            SpaceRenderer.DrawLabel(canvas, "Moon 🌙", new SKPoint(moonX, moonY - moonRadius - 8),
+            SpaceRenderer.DrawLabel(canvas, "Moon", new SKPoint(moonX, moonY - moonRadius - 8),
                 14, new SKColor(200, 200, 200));
         }
 

@@ -56,16 +56,11 @@ public class MoonPhaseView : SKCanvasView
             SpaceRenderer.DrawCuteFace(canvas, center, moonRadius * 0.7f, faceExpression);
         }
 
-        // Phase label with fun kid-friendly name
-        var (phaseName, phaseEmoji) = _state.Phase;
-        SpaceRenderer.DrawLabel(canvas, $"{phaseEmoji}  {phaseName}",
+        // Phase label with fun kid-friendly name (no emoji — SkiaSharp can't render them)
+        var (phaseName, _) = _state.Phase;
+        SpaceRenderer.DrawLabel(canvas, phaseName,
             new SKPoint(w * 0.5f, center.Y + moonRadius + 40),
             22, new SKColor(230, 230, 230));
-
-        // Moon face emoji
-        SpaceRenderer.DrawLabel(canvas, _state.MoonFace,
-            new SKPoint(w * 0.5f, center.Y + moonRadius + 68),
-            20, new SKColor(230, 230, 230));
     }
 
     /// <summary>
