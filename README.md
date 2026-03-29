@@ -2,11 +2,9 @@
 
 An interactive moon phase simulation built with **.NET MAUI** and **SkiaSharp**. Designed to teach young children how the Moon orbits Earth, why it goes through phases, and what day and night look like — all in a fun, visual way.
 
-## Screenshots
+## Screenshot
 
-| Orbital View + Moon Phase + Sky View |
-|:---:|
-| Sun, Earth, and Moon orbit with day/night cycle, moon phase close-up, and what the sky looks like from Earth |
+![Luna — Full Moon at Night](docs/screenshot.png)
 
 ## Features
 
