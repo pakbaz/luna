@@ -157,17 +157,23 @@ public static class EarthRenderer
 
     /// <summary>
     /// Draws a small observer indicator on Earth's equator.
+    /// Position uses the same coordinate convention as the Moon orbit
+    /// so the observer visually faces the Moon when it's in their sky.
     /// </summary>
     public static void DrawObserver(SKCanvas canvas, SKPoint center, float radius,
         double earthRotationDeg, SKPoint lightDir)
     {
         double rotRad = earthRotationDeg * Math.PI / 180.0;
 
-        float obsX = center.X + radius * 0.9f * (float)Math.Cos(rotRad + Math.PI);
-        float obsY = center.Y + radius * 0.3f * (float)Math.Sin(rotRad + Math.PI);
+        // Same coordinate convention as the Moon: negated cos for X, positive sin for Y.
+        // This ensures the observer dot is on the same side as the Moon
+        // when moonAngle ≈ earthRotation (Moon at zenith in sky view).
+        float obsX = center.X - radius * 0.9f * (float)Math.Cos(rotRad);
+        float obsY = center.Y + radius * 0.3f * (float)Math.Sin(rotRad);
 
-        float sinComponent = (float)Math.Sin(rotRad + Math.PI);
-        if (sinComponent > -0.3f) // Visible hemisphere (with tilt)
+        // Visible when on the "front" half of the tilted perspective
+        float sinComponent = (float)Math.Sin(rotRad);
+        if (sinComponent > -0.3f)
         {
             float relX = (obsX - center.X) / radius;
             float dot = relX * lightDir.X;
