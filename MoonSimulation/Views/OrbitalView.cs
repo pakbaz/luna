@@ -83,7 +83,7 @@ public class OrbitalView : SKCanvasView
 
         // Earth
         SpaceRenderer.DrawEarth(canvas, new SKPoint(earthX, earthY), earthRadius,
-            SunLightDir(new SKPoint(earthX, earthY)));
+            SunLightDir(new SKPoint(earthX, earthY)), _state.EarthRotationDegrees);
         SpaceRenderer.DrawLabel(canvas, "Earth 🌍", new SKPoint(earthX, earthY + earthRadius + 20),
             15, new SKColor(100, 180, 255));
 

@@ -55,9 +55,14 @@ public class SimulationEngine
         // Degrees per second at 1x speed
         double degreesPerSecond = 360.0 / BaseSecondsPerOrbit;
 
-        // Advance angle
+        // Advance moon angle
         double deltaDegrees = degreesPerSecond * Speed * TickIntervalSeconds;
         _state.MoonAngleDegrees = (_state.MoonAngleDegrees + deltaDegrees) % 360.0;
+
+        // Advance Earth rotation — Earth spins ~29.5 times per lunar orbit
+        double earthDegreesPerSecond = degreesPerSecond * OrbitPeriodDays;
+        double earthDelta = earthDegreesPerSecond * Speed * TickIntervalSeconds;
+        _state.EarthRotationDegrees = (_state.EarthRotationDegrees + earthDelta) % 360.0;
 
         // Track elapsed days
         double daysPerSecond = OrbitPeriodDays / BaseSecondsPerOrbit;

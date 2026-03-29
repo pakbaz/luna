@@ -12,6 +12,7 @@ public partial class MainPage : ContentPage
 
 		OrbitalCanvas.SetState(_engine.State);
 		PhaseCanvas.SetState(_engine.State);
+		SkyCanvas.SetState(_engine.State);
 
 		_engine.OnTick += OnSimulationTick;
 	}
@@ -26,9 +27,15 @@ public partial class MainPage : ContentPage
 	{
 		OrbitalCanvas.InvalidateSurface();
 		PhaseCanvas.InvalidateSurface();
+		SkyCanvas.InvalidateSurface();
 
-		var (name, emoji) = _engine.State.Phase;
-		PhaseLabel.Text = $"{emoji}  {name}";
+		var (phaseName, phaseEmoji) = _engine.State.Phase;
+		PhaseLabel.Text = $"{phaseEmoji}  {phaseName}";
+
+		var (timeName, timeEmoji) = _engine.State.TimeOfDay;
+		int hours = (int)_engine.State.HourOfDay;
+		int mins = (int)((_engine.State.HourOfDay - hours) * 60);
+		TimeLabel.Text = $"{timeEmoji}  {timeName} {hours:D2}:{mins:D2}";
 	}
 
 	private void OnPlayPauseClicked(object? sender, EventArgs e)

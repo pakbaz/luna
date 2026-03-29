@@ -13,6 +13,14 @@ public class OrbitalState
     public double MoonAngleDegrees { get; set; }
 
     /// <summary>
+    /// Earth's rotation angle in degrees (0–360).
+    /// Represents where the observer on Earth's equator is.
+    /// 0° = observer facing the Sun (noon).
+    /// 180° = observer facing away from Sun (midnight).
+    /// </summary>
+    public double EarthRotationDegrees { get; set; }
+
+    /// <summary>
     /// Phase angle for illumination (0 = New Moon, π = Full Moon).
     /// </summary>
     public double PhaseAngle => MoonAngleDegrees * Math.PI / 180.0;
@@ -32,9 +40,52 @@ public class OrbitalState
     /// </summary>
     public double ElapsedDays { get; set; }
 
+    /// <summary>
+    /// Sun elevation for the observer (-1 = midnight, 0 = horizon, 1 = noon).
+    /// Based on Earth rotation: cos(rotation) gives 1 at noon, -1 at midnight.
+    /// </summary>
+    public double SunElevation => Math.Cos(EarthRotationDegrees * Math.PI / 180.0);
+
+    /// <summary>
+    /// True when the observer is on the sunlit side of Earth.
+    /// </summary>
+    public bool IsDaytime => SunElevation > 0;
+
+    /// <summary>
+    /// Time of day description for the observer.
+    /// </summary>
+    public (string Name, string Emoji) TimeOfDay
+    {
+        get
+        {
+            double elev = SunElevation;
+            return elev switch
+            {
+                > 0.3 => ("Day", "☀️"),
+                > 0.0 => ("Sunrise", "🌅"),
+                > -0.3 => ("Sunset", "🌇"),
+                _ => ("Night", "🌙")
+            };
+        }
+    }
+
+    /// <summary>
+    /// Fractional hour of the day (0-24) for display.
+    /// 0/24 = midnight, 6 = sunrise, 12 = noon, 18 = sunset.
+    /// </summary>
+    public double HourOfDay
+    {
+        get
+        {
+            double norm = ((EarthRotationDegrees % 360) + 360) % 360;
+            // 0° = noon (12:00), 180° = midnight (0:00)
+            double hour = (norm / 360.0 * 24.0 + 12.0) % 24.0;
+            return hour;
+        }
+    }
+
     private static (string Name, string Emoji) GetPhase(double angle)
     {
-        // Normalize to 0-360
         angle = ((angle % 360) + 360) % 360;
 
         return angle switch
