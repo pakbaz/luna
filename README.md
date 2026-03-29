@@ -1,5 +1,7 @@
 # Luna 🌙
 
+**[▶️ Try it live — pakbaz.github.io/luna](https://pakbaz.github.io/luna/)**
+
 An interactive moon phase simulation built with **.NET MAUI** and **SkiaSharp**. Designed to teach young children how the Moon orbits Earth, why it goes through phases, and what day and night look like — all in a fun, visual way.
 
 ## Screenshot
