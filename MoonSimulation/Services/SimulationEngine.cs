@@ -4,7 +4,7 @@ namespace MoonSimulation.Services;
 /// Drives the simulation loop — advances the moon's orbital position
 /// at a configurable speed and notifies subscribers on each tick.
 /// </summary>
-public class SimulationEngine
+public class SimulationEngine : ISimulationEngine
 {
     private IDispatcherTimer? _timer;
     private readonly Models.OrbitalState _state = new();

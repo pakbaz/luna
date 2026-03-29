@@ -4,15 +4,15 @@ namespace MoonSimulation;
 
 public partial class MainPage : ContentPage
 {
-	private readonly SimulationEngine _engine = new();
+	private readonly ISimulationEngine _engine = new SimulationEngine();
 
 	public MainPage()
 	{
 		InitializeComponent();
 
-		OrbitalCanvas.SetState(_engine.State);
-		PhaseCanvas.SetState(_engine.State);
-		SkyCanvas.SetState(_engine.State);
+		OrbitalCanvas.UpdateState(_engine.State);
+		PhaseCanvas.UpdateState(_engine.State);
+		SkyCanvas.UpdateState(_engine.State);
 
 		_engine.OnTick += OnSimulationTick;
 	}

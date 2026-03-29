@@ -1,7 +1,6 @@
 using SkiaSharp;
 using SkiaSharp.Views.Maui;
-using SkiaSharp.Views.Maui.Controls;
-using MoonSimulation.Helpers;
+using MoonSimulation.Renderers;
 using MoonSimulation.Models;
 
 namespace MoonSimulation.Views;
@@ -10,11 +9,9 @@ namespace MoonSimulation.Views;
 /// Top panel: Shows Sun, Earth, and Moon in their orbital positions.
 /// Rendered with a slight tilt for a 3D perspective feel.
 /// </summary>
-public class OrbitalView : SKCanvasView
+public class OrbitalView : SimulationCanvasView
 {
-    private OrbitalState? _state;
-
-    public void SetState(OrbitalState state) => _state = state;
+    private readonly StarfieldRenderer _starfield = new();
 
     protected override void OnPaintSurface(SKPaintSurfaceEventArgs e)
     {
@@ -23,9 +20,9 @@ public class OrbitalView : SKCanvasView
         canvas.Clear();
 
         var bounds = new SKRect(0, 0, info.Width, info.Height);
-        SpaceRenderer.DrawStarryBackground(canvas, bounds);
+        _starfield.DrawStarryBackground(canvas, bounds);
 
-        if (_state == null) return;
+        if (State == null) return;
 
         float w = info.Width;
         float h = info.Height;
@@ -43,10 +40,8 @@ public class OrbitalView : SKCanvasView
         float orbitRadiusX = Math.Min(w, h) * 0.25f;
         float orbitRadiusY = orbitRadiusX * 0.4f; // Elliptical for 3D tilt
 
-        // Moon position along orbit — cos is negated so that:
-        // 0° (New Moon) → Moon to the LEFT of Earth (between Sun and Earth)
-        // 180° (Full Moon) → Moon to the RIGHT of Earth (opposite side from Sun)
-        double angleRad = _state.MoonAngleDegrees * Math.PI / 180.0;
+        // Moon position along orbit
+        double angleRad = State.MoonAngleDegrees * Math.PI / 180.0;
         float moonX = earthX - orbitRadiusX * (float)Math.Cos(angleRad);
         float moonY = earthY + orbitRadiusY * (float)Math.Sin(angleRad);
         float moonRadius = Math.Min(w, h) * 0.04f;
@@ -60,41 +55,39 @@ public class OrbitalView : SKCanvasView
             return len > 0 ? new SKPoint(dx / len, dy / len) : new SKPoint(-1, 0);
         }
 
-        // Draw Sun rays (subtle lines emanating from the sun)
-        DrawSunRays(canvas, new SKPoint(sunX, sunY), sunRadius);
+        // Draw Sun rays
+        SunRenderer.DrawSunRays(canvas, new SKPoint(sunX, sunY), sunRadius);
 
         // Draw orbit path
-        SpaceRenderer.DrawOrbitPath(canvas, new SKPoint(earthX, earthY), orbitRadiusX, orbitRadiusY);
+        SphereRenderer.DrawOrbitPath(canvas, new SKPoint(earthX, earthY), orbitRadiusX, orbitRadiusY);
 
         // Determine draw order — Moon behind Earth when in back half of orbit
         bool moonBehind = Math.Sin(angleRad) < 0;
 
         if (moonBehind)
         {
-            // Moon first (behind), then Earth
-            SpaceRenderer.DrawMoonBody(canvas, new SKPoint(moonX, moonY), moonRadius,
+            MoonRenderer.DrawMoonBody(canvas, new SKPoint(moonX, moonY), moonRadius,
                 SunLightDir(new SKPoint(moonX, moonY)));
-            SpaceRenderer.DrawLabel(canvas, "Moon", new SKPoint(moonX, moonY - moonRadius - 8),
+            SphereRenderer.DrawLabel(canvas, "Moon", new SKPoint(moonX, moonY - moonRadius - 8),
                 14, new SKColor(200, 200, 200));
         }
 
         // Sun (always behind everything at its position)
-        SpaceRenderer.DrawSun(canvas, new SKPoint(sunX, sunY), sunRadius);
-        SpaceRenderer.DrawLabel(canvas, "Sun", new SKPoint(sunX, sunY + sunRadius + 20),
+        SunRenderer.DrawSun(canvas, new SKPoint(sunX, sunY), sunRadius);
+        SphereRenderer.DrawLabel(canvas, "Sun", new SKPoint(sunX, sunY + sunRadius + 20),
             15, new SKColor(255, 220, 100));
 
         // Earth
-        SpaceRenderer.DrawEarth(canvas, new SKPoint(earthX, earthY), earthRadius,
-            SunLightDir(new SKPoint(earthX, earthY)), _state.EarthRotationDegrees);
-        SpaceRenderer.DrawLabel(canvas, "Earth", new SKPoint(earthX, earthY + earthRadius + 20),
+        EarthRenderer.DrawEarth(canvas, new SKPoint(earthX, earthY), earthRadius,
+            SunLightDir(new SKPoint(earthX, earthY)), State.EarthRotationDegrees);
+        SphereRenderer.DrawLabel(canvas, "Earth", new SKPoint(earthX, earthY + earthRadius + 20),
             15, new SKColor(100, 180, 255));
 
         if (!moonBehind)
         {
-            // Moon in front
-            SpaceRenderer.DrawMoonBody(canvas, new SKPoint(moonX, moonY), moonRadius,
+            MoonRenderer.DrawMoonBody(canvas, new SKPoint(moonX, moonY), moonRadius,
                 SunLightDir(new SKPoint(moonX, moonY)));
-            SpaceRenderer.DrawLabel(canvas, "Moon", new SKPoint(moonX, moonY - moonRadius - 8),
+            SphereRenderer.DrawLabel(canvas, "Moon", new SKPoint(moonX, moonY - moonRadius - 8),
                 14, new SKColor(200, 200, 200));
         }
 
@@ -110,33 +103,7 @@ public class OrbitalView : SKCanvasView
         canvas.DrawLine(sunX + sunRadius, sunY, moonX, moonY, linePaint);
 
         // Day counter
-        SpaceRenderer.DrawLabel(canvas, $"Day {_state.ElapsedDays:F0}",
+        SphereRenderer.DrawLabel(canvas, $"Day {State.ElapsedDays:F0}",
             new SKPoint(w - 60, 25), 14, new SKColor(150, 150, 180));
-    }
-
-    private static void DrawSunRays(SKCanvas canvas, SKPoint center, float radius)
-    {
-        using var rayPaint = new SKPaint
-        {
-            IsAntialias = true,
-            Style = SKPaintStyle.Stroke,
-            StrokeWidth = 1.5f
-        };
-
-        for (int i = 0; i < 12; i++)
-        {
-            float angle = i * MathF.PI * 2 / 12;
-            float innerR = radius * 1.3f;
-            float outerR = radius * 1.7f;
-
-            float x1 = center.X + MathF.Cos(angle) * innerR;
-            float y1 = center.Y + MathF.Sin(angle) * innerR;
-            float x2 = center.X + MathF.Cos(angle) * outerR;
-            float y2 = center.Y + MathF.Sin(angle) * outerR;
-
-            byte alpha = (byte)(40 + 20 * MathF.Sin(angle * 3));
-            rayPaint.Color = new SKColor(255, 230, 100, alpha);
-            canvas.DrawLine(x1, y1, x2, y2, rayPaint);
-        }
     }
 }

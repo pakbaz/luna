@@ -1,7 +1,6 @@
 using SkiaSharp;
 using SkiaSharp.Views.Maui;
-using SkiaSharp.Views.Maui.Controls;
-using MoonSimulation.Helpers;
+using MoonSimulation.Renderers;
 using MoonSimulation.Models;
 
 namespace MoonSimulation.Views;
@@ -11,11 +10,9 @@ namespace MoonSimulation.Views;
 /// with accurate illumination based on the current phase angle.
 /// Uses the elliptical terminator technique for crescent/gibbous shapes.
 /// </summary>
-public class MoonPhaseView : SKCanvasView
+public class MoonPhaseView : SimulationCanvasView
 {
-    private OrbitalState? _state;
-
-    public void SetState(OrbitalState state) => _state = state;
+    private readonly StarfieldRenderer _starfield = new();
 
     protected override void OnPaintSurface(SKPaintSurfaceEventArgs e)
     {
@@ -24,9 +21,9 @@ public class MoonPhaseView : SKCanvasView
         canvas.Clear();
 
         var bounds = new SKRect(0, 0, info.Width, info.Height);
-        SpaceRenderer.DrawStarryBackground(canvas, bounds);
+        _starfield.DrawStarryBackground(canvas, bounds);
 
-        if (_state == null) return;
+        if (State == null) return;
 
         float w = info.Width;
         float h = info.Height;
@@ -36,8 +33,9 @@ public class MoonPhaseView : SKCanvasView
         // Draw the fully lit moon body first
         DrawFullMoon(canvas, center, moonRadius);
 
-        // Draw shadow overlay based on phase
-        DrawPhaseIllumination(canvas, center, moonRadius, _state.MoonAngleDegrees);
+        // Draw shadow overlay based on phase — using shared algorithm
+        MoonPhaseRenderer.DrawPhaseOverlay(canvas, center, moonRadius,
+            State.MoonAngleDegrees, new SKColor(5, 5, 20, 220));
 
         // Moon edge highlight (limb)
         using var limbPaint = new SKPaint
@@ -50,15 +48,15 @@ public class MoonPhaseView : SKCanvasView
         canvas.DrawCircle(center, moonRadius, limbPaint);
 
         // Cute face on the lit portion of the moon
-        string faceExpression = SpaceRenderer.GetMoonFaceExpression(_state.MoonAngleDegrees);
-        if (_state.Illumination > 0.15) // Only show face when there's enough visible moon
+        string faceExpression = FaceRenderer.GetMoonFaceExpression(State.MoonAngleDegrees);
+        if (State.Illumination > 0.15) // Only show face when there's enough visible moon
         {
-            SpaceRenderer.DrawCuteFace(canvas, center, moonRadius * 0.7f, faceExpression);
+            FaceRenderer.DrawCuteFace(canvas, center, moonRadius * 0.7f, faceExpression);
         }
 
         // Phase label with fun kid-friendly name (no emoji — SkiaSharp can't render them)
-        var (phaseName, _) = _state.Phase;
-        SpaceRenderer.DrawLabel(canvas, phaseName,
+        var (phaseName, _) = State.Phase;
+        SphereRenderer.DrawLabel(canvas, phaseName,
             new SKPoint(w * 0.5f, center.Y + moonRadius + 40),
             22, new SKColor(230, 230, 230));
     }
@@ -68,7 +66,7 @@ public class MoonPhaseView : SKCanvasView
     /// </summary>
     private static void DrawFullMoon(SKCanvas canvas, SKPoint center, float radius)
     {
-        // Base gray sphere with gentle 3D shading (light from the right for default)
+        // Base gray sphere with gentle 3D shading
         using var basePaint = new SKPaint { IsAntialias = true };
         using var baseShader = SKShader.CreateRadialGradient(
             new SKPoint(center.X, center.Y),
@@ -137,87 +135,5 @@ public class MoonPhaseView : SKCanvasView
             new SKRect(center.X + radius * 0.0f, center.Y - radius * 0.1f,
                        center.X + radius * 0.4f, center.Y + radius * 0.2f),
             mariaPaint);
-    }
-
-    /// <summary>
-    /// Draws the shadow on the moon using the elliptical terminator technique.
-    /// At moonAngle 0° = New Moon (fully shadowed), 180° = Full Moon (fully lit).
-    /// </summary>
-    private static void DrawPhaseIllumination(SKCanvas canvas, SKPoint center, float radius,
-        double moonAngleDegrees)
-    {
-        double angle = ((moonAngleDegrees % 360) + 360) % 360;
-        double phaseRad = angle * Math.PI / 180.0;
-
-        // Save canvas state
-        canvas.Save();
-
-        // Clip to the moon circle
-        using var clipPath = new SKPath();
-        clipPath.AddCircle(center.X, center.Y, radius);
-        canvas.ClipPath(clipPath);
-
-        using var shadowPaint = new SKPaint
-        {
-            IsAntialias = true,
-            Color = new SKColor(5, 5, 20, 220),
-            Style = SKPaintStyle.Fill
-        };
-
-        // The terminator (shadow boundary) is an ellipse whose x-scale
-        // varies with cos(phaseAngle).
-        // terminatorX = radius * cos(phaseAngle)
-        // When phaseAngle = 0 (new moon) → terminatorX = radius → full shadow
-        // When phaseAngle = π (full moon) → terminatorX = -radius → no shadow
-
-        float terminatorScale = (float)Math.Cos(phaseRad);
-
-        using var shadowPath = new SKPath();
-
-        if (angle <= 180)
-        {
-            // Waxing phases: right side illuminated, shadow on the left
-            // Shadow covers from left edge to terminator
-            shadowPath.MoveTo(center.X, center.Y - radius);
-
-            // Left arc (left half of moon)
-            shadowPath.ArcTo(
-                new SKRect(center.X - radius, center.Y - radius,
-                           center.X + radius, center.Y + radius),
-                -90, -180, false);
-
-            // Terminator arc (elliptical)
-            float termW = radius * Math.Abs(terminatorScale);
-            shadowPath.ArcTo(
-                new SKRect(center.X - termW, center.Y - radius,
-                           center.X + termW, center.Y + radius),
-                90, terminatorScale >= 0 ? -180 : 180, false);
-
-            shadowPath.Close();
-        }
-        else
-        {
-            // Waning phases: left side illuminated, shadow on the right
-            shadowPath.MoveTo(center.X, center.Y - radius);
-
-            // Right arc (right half of moon)
-            shadowPath.ArcTo(
-                new SKRect(center.X - radius, center.Y - radius,
-                           center.X + radius, center.Y + radius),
-                -90, 180, false);
-
-            // Terminator arc (elliptical)
-            float termW = radius * Math.Abs(terminatorScale);
-            shadowPath.ArcTo(
-                new SKRect(center.X - termW, center.Y - radius,
-                           center.X + termW, center.Y + radius),
-                90, terminatorScale >= 0 ? 180 : -180, false);
-
-            shadowPath.Close();
-        }
-
-        canvas.DrawPath(shadowPath, shadowPaint);
-
-        canvas.Restore();
     }
 }

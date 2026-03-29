@@ -1,7 +1,6 @@
 using SkiaSharp;
 using SkiaSharp.Views.Maui;
-using SkiaSharp.Views.Maui.Controls;
-using MoonSimulation.Helpers;
+using MoonSimulation.Renderers;
 using MoonSimulation.Models;
 
 namespace MoonSimulation.Views;
@@ -10,11 +9,15 @@ namespace MoonSimulation.Views;
 /// Shows the view from Earth's surface — blue sky + sun during day,
 /// dark starry sky + moon phase at night, with sunrise/sunset transitions.
 /// </summary>
-public class EarthSkyView : SKCanvasView
+public class EarthSkyView : SimulationCanvasView
 {
-    private OrbitalState? _state;
+    private readonly StarfieldRenderer _starfield = new();
+    private readonly SkySceneRenderer _skyScene;
 
-    public void SetState(OrbitalState state) => _state = state;
+    public EarthSkyView()
+    {
+        _skyScene = new SkySceneRenderer(_starfield);
+    }
 
     protected override void OnPaintSurface(SKPaintSurfaceEventArgs e)
     {
@@ -22,17 +25,22 @@ public class EarthSkyView : SKCanvasView
         var info = e.Info;
         canvas.Clear();
 
-        if (_state == null) return;
-
+        // Ensure starfield state is initialized (tick the starfield for frame counter)
         var bounds = new SKRect(0, 0, info.Width, info.Height);
+        _starfield.DrawStarryBackground(canvas, bounds);
 
-        SpaceRenderer.DrawEarthSkyView(canvas, bounds,
-            _state.SunElevation,
-            _state.MoonAngleDegrees,
-            _state.EarthRotationDegrees,
-            _state.Illumination,
-            _state.Phase,
-            _state.TimeOfDay,
-            _state.HourOfDay);
+        if (State == null) return;
+
+        // Clear and redraw — the sky scene draws its own background
+        canvas.Clear();
+
+        _skyScene.DrawEarthSkyView(canvas, bounds,
+            State.SunElevation,
+            State.MoonAngleDegrees,
+            State.EarthRotationDegrees,
+            State.Illumination,
+            State.Phase,
+            State.TimeOfDay,
+            State.HourOfDay);
     }
 }

@@ -1,6 +1,21 @@
 namespace MoonSimulation.Models;
 
 /// <summary>
+/// Moon phase angle thresholds (degrees) for consistent phase classification.
+/// </summary>
+public static class PhaseConstants
+{
+    public const double NewMoonEnd = 22.5;
+    public const double WaxingCrescentEnd = 67.5;
+    public const double FirstQuarterEnd = 112.5;
+    public const double WaxingGibbousEnd = 157.5;
+    public const double FullMoonEnd = 202.5;
+    public const double WaningGibbousEnd = 247.5;
+    public const double LastQuarterEnd = 292.5;
+    public const double WaningCrescentEnd = 337.5;
+}
+
+/// <summary>
 /// Represents the current state of the orbital simulation.
 /// </summary>
 public class OrbitalState
@@ -90,14 +105,14 @@ public class OrbitalState
 
         return angle switch
         {
-            < 22.5 => ("Moon is Hiding!", "🌑"),
-            < 67.5 => ("A Little Sliver!", "🌒"),
-            < 112.5 => ("Half Moon!", "🌓"),
-            < 157.5 => ("Almost Full!", "🌔"),
-            < 202.5 => ("WOW Full Moon!", "🌕"),
-            < 247.5 => ("Getting Smaller!", "🌖"),
-            < 292.5 => ("Half Moon!", "🌗"),
-            < 337.5 => ("Tiny Sliver!", "🌘"),
+            < PhaseConstants.NewMoonEnd => ("Moon is Hiding!", "🌑"),
+            < PhaseConstants.WaxingCrescentEnd => ("A Little Sliver!", "🌒"),
+            < PhaseConstants.FirstQuarterEnd => ("Half Moon!", "🌓"),
+            < PhaseConstants.WaxingGibbousEnd => ("Almost Full!", "🌔"),
+            < PhaseConstants.FullMoonEnd => ("WOW Full Moon!", "🌕"),
+            < PhaseConstants.WaningGibbousEnd => ("Getting Smaller!", "🌖"),
+            < PhaseConstants.LastQuarterEnd => ("Half Moon!", "🌗"),
+            < PhaseConstants.WaningCrescentEnd => ("Tiny Sliver!", "🌘"),
             _ => ("Moon is Hiding!", "🌑")
         };
     }
@@ -112,14 +127,14 @@ public class OrbitalState
             double angle = ((MoonAngleDegrees % 360) + 360) % 360;
             return angle switch
             {
-                < 22.5 => "😴",    // Hiding/sleeping
-                < 67.5 => "😊",    // Peeking out
-                < 112.5 => "😃",   // Half and happy
-                < 157.5 => "😄",   // Getting excited
-                < 202.5 => "🤩",   // Full moon = WOW
-                < 247.5 => "😌",   // Content
-                < 292.5 => "😃",   // Half again
-                < 337.5 => "🥱",   // Getting sleepy
+                < PhaseConstants.NewMoonEnd => "😴",    // Hiding/sleeping
+                < PhaseConstants.WaxingCrescentEnd => "😊",    // Peeking out
+                < PhaseConstants.FirstQuarterEnd => "😃",   // Half and happy
+                < PhaseConstants.WaxingGibbousEnd => "😄",   // Getting excited
+                < PhaseConstants.FullMoonEnd => "🤩",   // Full moon = WOW
+                < PhaseConstants.WaningGibbousEnd => "😌",   // Content
+                < PhaseConstants.LastQuarterEnd => "😃",   // Half again
+                < PhaseConstants.WaningCrescentEnd => "🥱",   // Getting sleepy
                 _ => "😴"
             };
         }
