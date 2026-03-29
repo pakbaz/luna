@@ -43,9 +43,11 @@ public class OrbitalView : SKCanvasView
         float orbitRadiusX = Math.Min(w, h) * 0.25f;
         float orbitRadiusY = orbitRadiusX * 0.4f; // Elliptical for 3D tilt
 
-        // Moon position along orbit
+        // Moon position along orbit — cos is negated so that:
+        // 0° (New Moon) → Moon to the LEFT of Earth (between Sun and Earth)
+        // 180° (Full Moon) → Moon to the RIGHT of Earth (opposite side from Sun)
         double angleRad = _state.MoonAngleDegrees * Math.PI / 180.0;
-        float moonX = earthX + orbitRadiusX * (float)Math.Cos(angleRad);
+        float moonX = earthX - orbitRadiusX * (float)Math.Cos(angleRad);
         float moonY = earthY + orbitRadiusY * (float)Math.Sin(angleRad);
         float moonRadius = Math.Min(w, h) * 0.04f;
 
