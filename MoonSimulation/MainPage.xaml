@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:views="clr-namespace:MoonSimulation.Views"
+             x:Class="MoonSimulation.MainPage"
+             BackgroundColor="#0a0a2e"
+             Title="Luna 🌙">
+
+    <Grid RowDefinitions="*, *, Auto"
+          Padding="0"
+          RowSpacing="0">
+
+        <!-- Top: Orbital View (Sun-Earth-Moon) -->
+        <Border Grid.Row="0"
+                StrokeThickness="0"
+                Margin="8,8,8,4">
+            <views:OrbitalView x:Name="OrbitalCanvas"
+                               EnableTouchEvents="False" />
+        </Border>
+
+        <!-- Bottom: Moon Phase Close-up -->
+        <Border Grid.Row="1"
+                StrokeThickness="0"
+                Margin="8,4,8,4">
+            <views:MoonPhaseView x:Name="PhaseCanvas"
+                                 EnableTouchEvents="False" />
+        </Border>
+
+        <!-- Controls Bar -->
+        <Grid Grid.Row="2"
+              ColumnDefinitions="Auto, *, Auto"
+              Padding="20,8,20,16"
+              ColumnSpacing="16"
+              BackgroundColor="#12123a">
+
+            <!-- Play/Pause Button -->
+            <Button x:Name="PlayPauseBtn"
+                    Grid.Column="0"
+                    Text="⏸️"
+                    FontSize="28"
+                    WidthRequest="60"
+                    HeightRequest="60"
+                    CornerRadius="30"
+                    BackgroundColor="#2a2a6a"
+                    TextColor="White"
+                    Clicked="OnPlayPauseClicked" />
+
+            <!-- Speed Slider with labels -->
+            <Grid Grid.Column="1"
+                  RowDefinitions="Auto, Auto"
+                  RowSpacing="4">
+
+                <Grid ColumnDefinitions="Auto, *, Auto"
+                      Grid.Row="0">
+                    <Label Grid.Column="0"
+                           Text="🐢"
+                           FontSize="20"
+                           VerticalOptions="Center" />
+                    <Slider x:Name="SpeedSlider"
+                            Grid.Column="1"
+                            Minimum="0.1"
+                            Maximum="10"
+                            Value="1"
+                            MinimumTrackColor="#6060cc"
+                            MaximumTrackColor="#2a2a4a"
+                            ThumbColor="#9090ff"
+                            ValueChanged="OnSpeedChanged" />
+                    <Label Grid.Column="2"
+                           Text="🐇"
+                           FontSize="20"
+                           VerticalOptions="Center" />
+                </Grid>
+
+                <!-- Phase Label -->
+                <Label x:Name="PhaseLabel"
+                       Grid.Row="1"
+                       Text="🌑  New Moon"
+                       FontSize="18"
+                       TextColor="#e0e0f0"
+                       HorizontalOptions="Center"
+                       HorizontalTextAlignment="Center" />
+            </Grid>
+
+            <!-- Speed display -->
+            <Label x:Name="SpeedLabel"
+                   Grid.Column="2"
+                   Text="1.0x"
+                   FontSize="16"
+                   TextColor="#8080b0"
+                   VerticalOptions="Center"
+                   HorizontalOptions="Center"
+                   WidthRequest="50" />
+        </Grid>
+    </Grid>
+</ContentPage>
