@@ -121,6 +121,7 @@ input[type="range"]::-webkit-slider-thumb {
   border-radius: 50%;
   background: #b0b0ff;
   cursor: pointer;
+  margin-top: -7px;
 }
 
 input[type="range"]::-moz-range-thumb {
