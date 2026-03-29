@@ -366,14 +366,19 @@ public static class SpaceRenderer
             }
         }
 
-        // Moon in the sky (visible at various phases and times)
-        // Moon is roughly opposite the Sun for Full Moon, same side for New Moon
-        double moonSkyAngle = (earthRotationDeg + moonAngleDeg) * Math.PI / 180.0;
-        double moonElevation = -Math.Cos(moonSkyAngle);
+        // Moon in the sky — angle from observer's zenith to Moon determines elevation.
+        // moonAngleDeg - earthRotationDeg = how far the Moon is from observer's overhead.
+        // cos(0) = 1 → Moon at zenith. cos(±90) = 0 → horizon. cos(±180) = -1 → below.
+        // This gives correct behavior:
+        //   Full Moon (180°) at midnight (180°): cos(0) = 1 → high in sky ✓
+        //   New Moon (0°) at noon (0°): cos(0) = 1 → in sky (but dark) ✓
+        //   Full Moon at noon: cos(180°) = -1 → below horizon ✓
+        double moonObserverAngle = (moonAngleDeg - earthRotationDeg) * Math.PI / 180.0;
+        double moonElevation = Math.Cos(moonObserverAngle);
 
         if (moonElevation > 0.05)
         {
-            float moonSkyX = bounds.Left + w * 0.5f - w * 0.3f * (float)Math.Cos(moonSkyAngle);
+            float moonSkyX = bounds.Left + w * 0.5f - w * 0.3f * (float)Math.Sin(moonObserverAngle);
             float moonSkyY = groundY - (groundY - bounds.Top) * 0.7f * (float)moonElevation;
             float moonR = Math.Min(w, h) * 0.055f;
 
