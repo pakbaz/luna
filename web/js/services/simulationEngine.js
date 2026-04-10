@@ -3,7 +3,7 @@ import { OrbitalState } from '../models/orbitalState.js';
 // Drives the simulation loop using requestAnimationFrame.
 export class SimulationEngine {
   static OrbitPeriodDays = 29.5;
-  static BaseSecondsPerOrbit = 30.0;
+  static BaseSecondsPerOrbit = 60.0;
 
   constructor() {
     this.state = new OrbitalState();
