@@ -74,13 +74,12 @@ public class OrbitalState
         get
         {
             double elev = SunElevation;
-            return elev switch
-            {
-                > 0.3 => ("Day", "☀️"),
-                > 0.0 => ("Sunrise", "🌅"),
-                > -0.3 => ("Sunset", "🌇"),
-                _ => ("Night", "🌙")
-            };
+            if (elev > 0.3) return ("Day", "☀️");
+            // Sun is rising when sin of the earth rotation angle is negative
+            // (EarthRotationDegrees between 180° and 360°, i.e. midnight→noon).
+            bool isRising = Math.Sin(EarthRotationDegrees * Math.PI / 180.0) < 0;
+            if (elev > -0.3) return isRising ? ("Sunrise", "🌅") : ("Sunset", "🌇");
+            return ("Night", "🌙");
         }
     }
 
