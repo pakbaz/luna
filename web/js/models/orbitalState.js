@@ -55,8 +55,12 @@ export class OrbitalState {
   get timeOfDay() {
     const elev = this.sunElevation;
     if (elev > 0.3) return { name: 'Day', emoji: '☀️' };
-    if (elev > 0.0) return { name: 'Sunrise', emoji: '🌅' };
-    if (elev > -0.3) return { name: 'Sunset', emoji: '🌇' };
+    // Sun is rising when sin of the earth rotation angle is negative
+    // (earthRotationDegrees between 180° and 360°, i.e. midnight→noon).
+    const isRising = Math.sin((this.earthRotationDegrees * Math.PI) / 180.0) < 0;
+    if (elev > -0.3) return isRising
+      ? { name: 'Sunrise', emoji: '🌅' }
+      : { name: 'Sunset', emoji: '🌇' };
     return { name: 'Night', emoji: '🌙' };
   }
 
