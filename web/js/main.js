@@ -8,6 +8,8 @@ import { EarthSkyView } from './views/earthSkyView.js';
 const sharedStarfield = new StarfieldRenderer();
 
 const engine = new SimulationEngine();
+// Expose for Playwright / integration tests
+window.__lunaEngine = engine;
 
 let orbitalView, moonPhaseView, earthSkyView;
 
