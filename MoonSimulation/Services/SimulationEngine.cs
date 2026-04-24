@@ -10,13 +10,13 @@ public class SimulationEngine : ISimulationEngine
     private readonly Models.OrbitalState _state = new();
     private bool _isRunning;
 
-    // One full orbit = 29.5 Earth days.  At 1x speed we complete it in 30 seconds real-time.
+    // One full orbit = 29.5 Earth days.  At 1x speed we complete it in 120 seconds real-time.
     private const double OrbitPeriodDays = 29.5;
-    private const double BaseSecondsPerOrbit = 30.0;
+    private const double BaseSecondsPerOrbit = 120.0;
     private const double TickIntervalSeconds = 1.0 / 60.0; // 60 fps
 
-    /// <summary>Speed multiplier: 0.1 (slow) → 10 (fast).</summary>
-    public double Speed { get; set; } = 1.0;
+    /// <summary>Speed multiplier: 0.1 (slow) → 3 (fast).</summary>
+    public double Speed { get; set; } = 0.5;
 
     public Models.OrbitalState State => _state;
     public bool IsRunning => _isRunning;

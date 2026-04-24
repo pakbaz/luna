@@ -3,14 +3,14 @@ import { OrbitalState } from '../models/orbitalState.js';
 // Drives the simulation loop using requestAnimationFrame.
 export class SimulationEngine {
   static OrbitPeriodDays = 29.5;
-  static BaseSecondsPerOrbit = 60.0;
+  static BaseSecondsPerOrbit = 120.0;
 
   constructor() {
     this.state = new OrbitalState();
     this._isRunning = false;
     this._animFrameId = null;
     this._lastTimestamp = null;
-    this.speed = 1.0;
+    this.speed = 0.5;
     this.onTick = null;
   }
 
