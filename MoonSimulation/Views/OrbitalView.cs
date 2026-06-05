@@ -103,7 +103,7 @@ public class OrbitalView : SimulationCanvasView
         canvas.DrawLine(sunX + sunRadius, sunY, moonX, moonY, linePaint);
 
         // Day counter
-        SphereRenderer.DrawLabel(canvas, $"Day {State.ElapsedDays:F0}",
+        SphereRenderer.DrawLabel(canvas, $"Day {Math.Floor(State.ElapsedDays)}",
             new SKPoint(w - 60, 25), 14, new SKColor(150, 150, 180));
     }
 }

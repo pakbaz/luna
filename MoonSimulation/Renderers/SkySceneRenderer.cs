@@ -16,6 +16,24 @@ public class SkySceneRenderer
     }
 
     /// <summary>
+    /// Pure sky-dome projection shared by the Sun and the Moon so both bodies
+    /// follow the same convention.
+    /// <para><paramref name="objectAngleDeg"/> — the body's orbital angle measured from
+    /// the Sun direction (Sun = 0°; Moon = its phase angle, 0° New … 180° Full).</para>
+    /// <para><paramref name="earthRotationDeg"/> — observer's facing
+    /// (0° = noon/toward Sun, 180° = midnight).</para>
+    /// Returns a normalized horizontal offset (-1 = east/left horizon, 0 = meridian,
+    /// +1 = west/right horizon) and elevation (-1 = below horizon, +1 = overhead).
+    /// Elevation ∝ cos(hourAngle) and azimuth ∝ sin(hourAngle); pairing cos with sin
+    /// is what makes a body rise on one horizon, transit overhead, and set on the other.
+    /// </summary>
+    public static (double XFraction, double Elevation) SkyPosition(double objectAngleDeg, double earthRotationDeg)
+    {
+        double hourAngle = (earthRotationDeg - objectAngleDeg) * Math.PI / 180.0;
+        return (Math.Sin(hourAngle), Math.Cos(hourAngle));
+    }
+
+    /// <summary>
     /// Draws the complete Earth sky view scene.
     /// </summary>
     public void DrawEarthSkyView(SKCanvas canvas, SKRect bounds,
@@ -35,8 +53,7 @@ public class SkySceneRenderer
         // Sun in the sky (when above horizon)
         if (sunElevation > -0.1)
         {
-            float sunArc = (float)(1.0 - (earthRotationDeg % 360) / 180.0);
-            float sunSkyX = bounds.Left + w * 0.5f + w * 0.35f * (float)Math.Cos(earthRotationDeg * Math.PI / 180.0);
+            float sunSkyX = bounds.Left + w * 0.5f + w * 0.35f * (float)SkyPosition(0, earthRotationDeg).XFraction;
             float sunSkyY = groundY - (groundY - bounds.Top) * 0.8f * Math.Max(0, (float)sunElevation);
 
             if (sunElevation > 0)
@@ -66,8 +83,8 @@ public class SkySceneRenderer
         // moonAngleDeg: Moon's orbital angle (0° = between Sun and Earth, 180° = far side)
         // earthRotationDeg: observer's facing (0° = facing Sun/noon, 180° = away/midnight)
         // The angular difference tells us how far the Moon is from the observer's zenith.
-        double moonObserverAngle = (moonAngleDeg - earthRotationDeg) * Math.PI / 180.0;
-        double moonElevation = Math.Cos(moonObserverAngle);
+        var moonSky = SkyPosition(moonAngleDeg, earthRotationDeg);
+        double moonElevation = moonSky.Elevation;
 
         // Moon is only visually noticeable if:
         // 1. Above the horizon (elevation > 0)
@@ -78,7 +95,7 @@ public class SkySceneRenderer
 
         if (moonVisible)
         {
-            float moonSkyX = bounds.Left + w * 0.5f - w * 0.3f * (float)Math.Sin(moonObserverAngle);
+            float moonSkyX = bounds.Left + w * 0.5f + w * 0.3f * (float)moonSky.XFraction;
             float moonSkyY = groundY - (groundY - bounds.Top) * 0.7f * (float)moonElevation;
             float moonR = Math.Min(w, h) * 0.055f;
 
