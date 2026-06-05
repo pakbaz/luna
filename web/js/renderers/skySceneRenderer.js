@@ -3,6 +3,24 @@ import { drawLabel } from './sphereRenderer.js';
 import { drawPhaseOverlay } from './moonPhaseRenderer.js';
 import { drawClouds, drawLittleHouse } from './sceneryRenderer.js';
 
+// Pure sky-dome projection shared by the Sun and the Moon so both bodies
+// follow the same convention.
+//   objectAngleDeg   — the body's orbital angle measured from the Sun direction
+//                      (Sun = 0°; Moon = its phase angle, 0° New … 180° Full).
+//   earthRotationDeg — observer's facing (0° = noon/toward Sun, 180° = midnight).
+// Returns a normalized horizontal offset and elevation:
+//   xFraction: -1 = east/left horizon, 0 = meridian/centre, +1 = west/right horizon
+//   elevation: -1 = below horizon (anti-zenith), +1 = overhead (zenith)
+// Elevation ∝ cos(hourAngle) and azimuth ∝ sin(hourAngle); pairing cos with sin
+// is what makes a body rise on one horizon, transit overhead, and set on the other.
+export function skyPosition(objectAngleDeg, earthRotationDeg) {
+  const hourAngle = ((earthRotationDeg - objectAngleDeg) * Math.PI) / 180.0;
+  return {
+    xFraction: Math.sin(hourAngle),
+    elevation: Math.cos(hourAngle),
+  };
+}
+
 // Orchestrates the "view from Earth" sky scene.
 export class SkySceneRenderer {
   constructor(starfield) {
@@ -23,7 +41,7 @@ export class SkySceneRenderer {
 
     // Sun in the sky
     if (sunElevation > -0.1) {
-      const sunSkyX = x + w * 0.5 + w * 0.35 * Math.cos(earthRotationDeg * Math.PI / 180.0);
+      const sunSkyX = x + w * 0.5 + w * 0.35 * skyPosition(0, earthRotationDeg).xFraction;
       const sunSkyY = groundY - (groundY - y) * 0.8 * Math.max(0, sunElevation);
 
       if (sunElevation > 0) {
@@ -51,14 +69,14 @@ export class SkySceneRenderer {
     }
 
     // Moon in the sky
-    const moonObserverAngle = (moonAngleDeg - earthRotationDeg) * Math.PI / 180.0;
-    const moonElevation = Math.cos(moonObserverAngle);
+    const moonSky = skyPosition(moonAngleDeg, earthRotationDeg);
+    const moonElevation = moonSky.elevation;
 
     const minIlluminationToSee = sunElevation > 0.2 ? 0.25 : 0.03;
     const moonVisible = moonElevation > 0.05 && illumination > minIlluminationToSee;
 
     if (moonVisible) {
-      const moonSkyX = x + w * 0.5 - w * 0.3 * Math.sin(moonObserverAngle);
+      const moonSkyX = x + w * 0.5 + w * 0.3 * moonSky.xFraction;
       const moonSkyY = groundY - (groundY - y) * 0.7 * moonElevation;
       const moonR = Math.min(w, h) * 0.055;
 

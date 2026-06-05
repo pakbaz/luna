@@ -136,6 +136,8 @@ The Moon's phase is derived from its orbital angle:
 
 The illumination uses: `(1 - cos(angle)) / 2`, and the phase shadow is rendered with an elliptical terminator technique.
 
+In the **Earth Sky View**, the Sun and Moon are placed on the sky dome with a shared projection: for a body at sky angle θ (measured from the Sun's direction — Sun = 0°, Moon = its phase angle), the observer's hour angle is `H = earthRotation − θ`. Elevation is `cos(H)` (overhead at transit) and horizontal position is `sin(H)` (rising on one horizon, setting on the other). Pairing `cos` for height with `sin` for azimuth is what makes both bodies trace a correct horizon-to-horizon arc — e.g. a first-quarter Moon sits overhead exactly as the Sun sets in the west.
+
 ## License
 
 MIT
